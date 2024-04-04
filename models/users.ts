@@ -19,27 +19,6 @@ const userSchema = new mongoose.Schema<IUser>({
  * @swagger
  * components:
  *   schemas:
- *     CreateUser:
- *       type: object
- *       required:
- *         - email
- *         - name
- *         - password
- *       properties:
- *         email:
- *           type: string
- *           description: valid email of the user
- *         name:
- *           type: string
- *           description: name of the user
- *         password:
- *           type: string
- *           description: password of the user
- *       example:
- *         email: meow@meow.com
- *         name: Duggu
- *         password: password
- * 
  *     User:
  *       type: object
  *       required:
@@ -61,21 +40,7 @@ const userSchema = new mongoose.Schema<IUser>({
  *         email: meow@meow.com
  *         name: Duggu
  *         _id: 660e71180213889760402d47
- *     LoginUser:
- *       type: object
- *       required:
- *         - email
- *         - password
- *       properties:
- *         email:
- *           type: string
- *           description: valid email of the user
- *         password:
- *           type: string
- *           description: password of the user
- *       example:
- *         email: meow@meow.com
- *         password: password
+ *     
  */
 
 const User = mongoose.model<IUser>("User", userSchema);
