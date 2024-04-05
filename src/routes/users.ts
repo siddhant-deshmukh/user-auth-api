@@ -57,6 +57,8 @@ router.get('/', auth, function (req: Request, res: Response, next: NextFunction)
  *   put:
  *     summary: 
  *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       content:
  *         application/json:

@@ -43,7 +43,7 @@ const options = {
     //   }
     // ]
   },
-  apis: ['./models/*.ts', './routes/*.ts'], // Adjust paths to your models and routes
+  apis: ['./src/models/*.ts', './src/routes/*.ts'], // Adjust paths to your models and routes
 };
 
 export const specs = swaggerJsdoc(options);
