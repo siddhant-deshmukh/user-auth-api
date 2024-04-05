@@ -1,16 +1,16 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "main": "dist/app.js",
+  "main": "dist/src/app.js",
   "author": "Siddhant Deshmukh",
   "license": "MIT",
   "scripts": {
-    "test": "nyc mocha --require ts-node/register test/**.spec.ts",
+    "test": "mocha --timeout 30000 --require ts-node/register test/**.spec.ts",
     "build": "npx tsc",
-    "start": "node dist/app.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\"",
+    "start": "node dist/src/app.js",
+    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/app.js\"",
     "build-prod": "cd client && npm install &&  cd .. && npm install",
-    "both": "concurrently \"npx tsc --watch\" \"nodemon -q dist/app.js\" \" cd ../frontend && yarn run dev \" "
+    "both": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/app.js\" \" cd ../frontend && yarn run dev \" "
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import User from "../models/users";
+import User from "../src/models/users";
 import { expect } from 'chai';
 import request from "supertest"
-import app from "../app";
+import app from "../src/app";
 
 const env = process.env.NODE_ENV || 'development';
 
