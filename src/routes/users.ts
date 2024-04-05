@@ -4,7 +4,7 @@ import express, { NextFunction, Request, Response } from 'express'
 
 import auth from '../middleware/auth'
 import validate from '../middleware/validate';
-import { UserLogin, UserRegister } from '../controller/user';
+import { EditUser, UserLogin, UserRegister } from '../controller/user';
 
 
 dotenv.config();
@@ -50,6 +50,37 @@ var router = express.Router();
 router.get('/', auth, function (req: Request, res: Response, next: NextFunction) {
   return res.status(200).json({ user: res.user });
 });
+
+/**
+ * @swagger
+ * /:
+ *   put:
+ *     summary: 
+ *     tags: [User]
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterUser'
+ *     responses:
+ *       200:
+ *         description: Succesfully updated
+ *       400:
+ *         description: Invalid email or password. Password length between 5 to 20. Name length between 1 to 50. Invalid email or length greater than 100.
+ *       404:
+ *         description: Invalid token or _id not found.
+ *       500:
+ *         description: Some internal server error 
+*/
+router.put('/',
+  body('name').optional().isString().isLength({ max: 50, min: 1 }).trim(),
+  body('password').optional().isString().isLength({ max: 20, min: 5 }).trim(),
+  body('email').optional().isEmail().isLength({ max: 100, min: 3 }).toLowerCase().trim(),
+  validate,
+  auth,
+  EditUser
+);
+
 
 /**
  * @swagger
