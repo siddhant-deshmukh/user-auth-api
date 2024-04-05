@@ -1,15 +1,19 @@
-import mongoose from "mongoose";
-import User from "../src/models/users";
 import { expect } from 'chai';
 import request from "supertest"
+import mongoose from "mongoose";
+
+import '../src/global';
 import app from "../src/app";
+import User, { IUserCreate } from "../src/models/users";
 
-const env = process.env.NODE_ENV || 'development';
-
-let userId = '';
-
-describe("api/users", () => {
+describe("/", () => {
   before(async () => {
+    mongoose.disconnect();
+
+    const test_cs = process.env.MONGODB_CONNECTION_STRING_TEST
+    if (test_cs)
+      await mongoose.connect(test_cs);
+
     await User.deleteMany({});
   });
 
@@ -17,171 +21,383 @@ describe("api/users", () => {
     mongoose.disconnect();
   });
 
-  it("should connect and disconnect to mongodb", async () => {
-    // console.log(mongoose.connection.states);
-    mongoose.disconnect();
-    mongoose.connection.on('disconnected', () => {
-      expect(mongoose.connection.readyState).to.equal(0);
-    });
-    mongoose.connection.on('connected', () => {
-      expect(mongoose.connection.readyState).to.equal(1);
-    });
-    mongoose.connection.on('error', () => {
-      expect(mongoose.connection.readyState).to.equal(99);
-    });
+  describe("GET /", async () => {
+    it(`valid autherization`, async () => {
+      const createUser = { name: "duggu", email: "duggu@gmail.com", password: "password" }
+      const registerRes = await request(app)
+        .post("/register")
+        .send(createUser as IUserCreate)
 
-    const test_cs = process.env.MONGODB_CONNECTION_STRING_TEST
-    if (test_cs)
-      await mongoose.connect(test_cs);
+      const data01 = registerRes.body;
+      expect(registerRes.status).to.equal(201);
+      expect(data01).to.have.property("token");
+      expect(data01).to.have.property("user");
+      expect(data01.user).not.have.property("password")
+      expect(data01.user).to.have.property("_id");
+      expect(data01.user).to.have.property("name", createUser.name);
+      expect(data01.user).to.have.property("email", createUser.email.toLowerCase());
+
+      const token = data01.token
+
+      const res = await request(app)
+        .get("/")
+        .set('Authorization', `Bearer ${token}`);
+
+
+      const data = res.body;
+      expect(res.status).to.equal(200);
+      expect(data).to.have.property("user");
+      expect(data.user).not.have.property("password")
+      expect(data.user).to.have.property("_id");
+      expect(data.user).to.have.property("name", createUser.name);
+      expect(data.user).to.have.property("email", createUser.email.toLowerCase());
+    })
+
+    it(`invalid autherization: wrong token syntax 01`, async () => {
+      const createUser = { name: "duggu", email: "duggu1@gmail.com", password: "password" }
+      const registerRes = await request(app)
+        .post("/register")
+        .send(createUser as IUserCreate)
+
+      const data01 = registerRes.body;
+      expect(registerRes.status).to.equal(201);
+      expect(data01).to.have.property("token");
+      expect(data01).to.have.property("user");
+      expect(data01.user).not.have.property("password")
+      expect(data01.user).to.have.property("_id");
+      expect(data01.user).to.have.property("name", createUser.name);
+      expect(data01.user).to.have.property("email", createUser.email.toLowerCase());
+
+      const token = data01.token
+
+      const res = await request(app)
+        .get("/")
+        .set('Authorization', `Bearer${token}`);
+
+
+      const data = res.body;
+      expect(res.status).to.equal(401);
+      expect(data).not.have.property("user");
+    })
+
+    it(`invalid autherization: wrong token syntax 02`, async () => {
+      const createUser = { name: "duggu", email: "duggu2@gmail.com", password: "password" }
+      const registerRes = await request(app)
+        .post("/register")
+        .send(createUser as IUserCreate)
+
+      const data01 = registerRes.body;
+      expect(registerRes.status).to.equal(201);
+      expect(data01).to.have.property("token");
+      expect(data01).to.have.property("user");
+      expect(data01.user).not.have.property("password")
+      expect(data01.user).to.have.property("_id");
+      expect(data01.user).to.have.property("name", createUser.name);
+      expect(data01.user).to.have.property("email", createUser.email.toLowerCase());
+
+      const token = data01.token
+
+      const res = await request(app)
+        .get("/")
+        .set('Authorization', `${token}`);
+
+
+      const data = res.body;
+      expect(res.status).to.equal(401);
+      expect(data).not.have.property("user")
+    })
+
+    it(`invalid autherization: wrong token syntax 03`, async () => {
+      const createUser = { name: "duggu", email: "duggu3@gmail.com", password: "password" }
+      const registerRes = await request(app)
+        .post("/register")
+        .send(createUser as IUserCreate)
+
+      const data01 = registerRes.body;
+      expect(registerRes.status).to.equal(201);
+      expect(data01).to.have.property("token");
+      expect(data01).to.have.property("user");
+      expect(data01.user).not.have.property("password")
+      expect(data01.user).to.have.property("_id");
+      expect(data01.user).to.have.property("name", createUser.name);
+      expect(data01.user).to.have.property("email", createUser.email.toLowerCase());
+
+      const token = data01.token
+
+      const res = await request(app)
+        .get("/")
+        .set('Authorization', `meow`);
+
+
+      const data = res.body;
+      expect(res.status).to.equal(401);
+      expect(data).not.have.property("user")
+    })
+
+    it(`invalid autherization: wrong token syntax 04`, async () => {
+      const createUser = { name: "duggu", email: "duggu5@gmail.com", password: "password" }
+      const registerRes = await request(app)
+        .post("/register")
+        .send(createUser as IUserCreate)
+
+      const data01 = registerRes.body;
+      expect(registerRes.status).to.equal(201);
+      expect(data01).to.have.property("token");
+      expect(data01).to.have.property("user");
+      expect(data01.user).not.have.property("password")
+      expect(data01.user).to.have.property("_id");
+      expect(data01.user).to.have.property("name", createUser.name);
+      expect(data01.user).to.have.property("email", createUser.email.toLowerCase());
+
+      const token = data01.token
+
+      const res = await request(app)
+        .get("/")
+        .set('Authorization', `${token}`);
+
+
+      const data = res.body;
+      expect(res.status).to.equal(401);
+      expect(data).not.have.property("user")
+    })
+
+    it(`invalid autherization: invalid token`, async () => {
+      const createUser = { name: "duggu", email: "duggu10@gmail.com", password: "password" }
+      const registerRes = await request(app)
+        .post("/register")
+        .send(createUser as IUserCreate)
+
+      const data01 = registerRes.body;
+      expect(registerRes.status).to.equal(201);
+      expect(data01).to.have.property("token");
+      expect(data01).to.have.property("user");
+      expect(data01.user).not.have.property("password")
+      expect(data01.user).to.have.property("_id");
+      expect(data01.user).to.have.property("name", createUser.name);
+      expect(data01.user).to.have.property("email", createUser.email.toLowerCase());
+
+      const token = data01.token as string
+      let newToken = token.slice()
+      newToken = newToken.replace(newToken.slice(0, 10), newToken.slice(5, 10))
+
+      const res = await request(app)
+        .get("/")
+        .set('Authorization', `Bearer ${newToken}`);
+
+
+      const data = res.body;
+      expect(res.status).to.equal(403);
+      expect(data).not.have.property("user")
+    })
   });
 
-  // describe("GET /", () => {
-  //   it("should return all users", async () => {
-  //     const users = [
-  //       { name: "george", email: "geo@gmail.com", country: "romania" },
-  //       { name: "maria", email: "maria@gmail.com", country: "spain" }
-  //     ];
-  //     await User.insertMany(users);
-  //     const res = await request(app).get("/api/users");
-  //     expect(res.status).to.equal(200);
-  //     expect(res.body.length).to.equal(2);
-  //   });
-  // });
+  describe("POST /login", () => {
+    it(`valid login`, async () => {
+      const createUser: IUserCreate = { name: "n", email: "unique@u.com", password: "password" }
 
-  // describe("GET/:id", () => {
-  //   it("should return a user if valid id is passed", async () => {
-  //     const user = new User({
-  //       name: "florian",
-  //       email: "florian@gmail.com",
-  //       country: "germany"
-  //     });
-  //     await user.save();
-  //     const res = await request(app).get("/api/users/" + user._id);
-  //     expect(res.status).to.equal(200);
-  //     expect(res.body).to.have.property("name", user.name);
-  //   });
+      const resB = await request(app)
+        .post("/register")
+        .send({ ...createUser } as IUserCreate);
+      const res = await request(app)
+        .post("/login")
+        .send({ ...createUser } as IUserCreate);
 
-  //   it("should return 400 error when invalid object id is passed", async () => {
-  //     const res = await request(app).get("/api/users/1");
-  //     expect(res.status).to.equal(400);
-  //   });
+      const data = res.body;
+      expect(res.status).to.equal(200);
+      expect(data).to.have.property("token");
+      expect(data).to.have.property("user");
+      expect(data.user).not.have.property("password")
+      expect(data.user).to.have.property("_id");
+      expect(data.user).to.have.property("name", createUser.name);
+      expect(data.user).to.have.property("email", createUser.email.toLowerCase());
+    })
 
-  //   it("should return 404 error when valid object id is passed but does not exist", async () => {
-  //     const res = await request(app).get("/api/users/5f43ef20c1d4a133e4628181");
-  //     expect(res.status).to.equal(404);
-  //   });
-  // });
+    it(`invalid login: incorrect email`, async () => {
+      const createUser: IUserCreate = { name: "n", email: "unique1@u.com", password: "password" }
 
-  describe("POST /", () => {
-    it("should add user to the database", async () => {
-      const validUsers = [
-        {
-          msg: "Normal body",
-          user: {
-            name: "Duggu",
-            email: "Meow@meow.com",
-            password: "password"
-          },
+      const res = await request(app)
+        .post("/login")
+        .send({ ...createUser } as IUserCreate);
+
+      const data = res.body;
+      expect(res.status).to.equal(404);
+      expect(data).not.have.property("token");
+      expect(data).not.have.property("user");
+    })
+
+    it(`invalid login: incorrect password`, async () => {
+      const createUser: IUserCreate = { name: "n", email: "unique2@u.com", password: "password" }
+
+      const resB = await request(app)
+        .post("/register")
+        .send({ ...createUser } as IUserCreate);
+      const res = await request(app)
+        .post("/login")
+        .send({ ...createUser, password: "newpassword" } as IUserCreate);
+
+      const data = res.body;
+      expect(resB.status).to.equal(201);
+      expect(res.status).to.equal(406);
+      expect(data).not.have.property("token");
+      expect(data).not.have.property("user");
+    })
+  });
+
+  describe("POST /register", () => {
+    const valid_user_test: { msg: string, user: IUserCreate }[] = [
+      {
+        msg: "Normal body",
+        user: {
+          name: "Duggu",
+          email: "Meow@meow.com",
+          password: "password"
         },
-        {
-          msg: "Minimum password length",
-          user: {
-            name: "Duggu",
-            email: "Meow1@meow.com",
-            password: "12345"
-          },
+      },
+      {
+        msg: "Minimum password length",
+        user: {
+          name: "Duggu",
+          email: "Meow1@meow.com",
+          password: "12345"
         },
-        {
-          msg: "Maximum password length",
-          user: {
-            name: "Duggu",
-            email: "Meow2@meow.com",
-            password: "12345123451234512345"
-          },
+      },
+      {
+        msg: "Maximum password length",
+        user: {
+          name: "Duggu",
+          email: "Meow2@meow.com",
+          password: "12345123451234512345"
         },
-        {
-          msg: "Maximum name length",
-          user: {
-            name: "12345678901234567890123456789012345678901234567890",
-            email: "Meow3@meow.com",
-            password: "password"
-          },
+      },
+      {
+        msg: "Maximum name length",
+        user: {
+          name: "12345678901234567890123456789012345678901234567890",
+          email: "Meow3@meow.com",
+          password: "password"
         },
-        {
-          msg: "Minimum name length",
-          user: {
-            name: "1",
-            email: "Meow4@meow.com",
-            password: "password"
-          },
+      },
+      {
+        msg: "Minimum name length",
+        user: {
+          name: "1",
+          email: "Meow4@meow.com",
+          password: "password"
         },
-      ];
-      const resPromiseArr = validUsers.map(async ({ msg, user }) => {
-        return await request(app)
+      },
+    ];
+    valid_user_test.forEach(({ msg, user: createUser }) => {
+      it(`register new valid user:  ${msg}`, async () => {
+        const res = await request(app)
           .post("/register")
-          .send(Object.assign({}, user));
-      });
-      const res = await Promise.all(resPromiseArr);
-      const promiseArr = res.map(async (res, index) => {
-        const realUser = validUsers[index].user;
+          .send({ ...createUser } as IUserCreate);
+
         const data = res.body;
         expect(res.status).to.equal(201);
         expect(data).to.have.property("token");
         expect(data).to.have.property("user");
+        expect(data.user).not.have.property("password")
         expect(data.user).to.have.property("_id");
-        expect(data.user).to.have.property("name", realUser.name);
-        expect(data.user).to.have.property("email", realUser.email);
+        expect(data.user).to.have.property("name", createUser.name);
+        expect(data.user).to.have.property("email", createUser.email.toLowerCase());
 
-        const user = await User.findOne({ email: realUser.email.toLowerCase() });
-        expect(user?.name).to.equal(realUser.name);
-        expect(user?.email).to.equal(realUser.email.toLowerCase());
-        expect(user?.password).not.equal(realUser.password);
-      });
+        const user = await User.findOne({ email: createUser.email.toLowerCase() });
+        expect(user?.password).not.equal(createUser.password);
+      })
+    })
 
-      await Promise.all(promiseArr);
-    });
+    const invalid_user_test: { msg: string, user: IUserCreate }[] = [
+      {
+        msg: "Minimum password length",
+        user: {
+          name: "Duggu",
+          email: "Meow1@meow.com",
+          password: "1234"
+        },
+      },
+      {
+        msg: "Maximum password length",
+        user: {
+          name: "Duggu",
+          email: "Meow2@meow.com",
+          password: "123451234512345123451"
+        },
+      },
+      {
+        msg: "Maximum name length",
+        user: {
+          name: "123456789012345678901234567890123456789012345678901",
+          email: "Meow3@meow.com",
+          password: "password"
+        },
+      },
+      {
+        msg: "Minimum name length",
+        user: {
+          name: "",
+          email: "Meow4@meow.com",
+          password: "password"
+        },
+      },
+      {
+        msg: "Invalid email",
+        user: {
+          name: "Meow",
+          email: "Meow4meow.com",
+          password: "password"
+        },
+      },
+      {
+        msg: "Invalid email 2",
+        user: {
+          name: "Meow",
+          email: "Meow4@meow",
+          password: "password"
+        },
+      },
+      {
+        msg: "Invalid email 3",
+        user: {
+          name: "Meow",
+          email: "Meow4@.com",
+          password: "password"
+        },
+      },
+      {
+        msg: "Invalid email 4",
+        user: {
+          name: "Meow",
+          email: "meow.com",
+          password: "password"
+        },
+      },
+    ];
+    invalid_user_test.forEach(({ msg, user: createUser }) => {
+      it(`register invalid user should give 400 error:  ${msg}`, async () => {
+        const res = await request(app)
+          .post("/register")
+          .send({ ...createUser } as IUserCreate);
+
+        const data = res.body;
+        expect(res.status).to.equal(400);
+        expect(data).not.have.property("token");
+        expect(data).not.have.property("user");
+      })
+    })
+
+    it(`register same mail twice 409 conflict error`, async () => {
+      const resB = await request(app)
+        .post("/register")
+        .send({ name: "n", email: "uniqueUnique@u.com", password: "password" } as IUserCreate);
+      const res = await request(app)
+        .post("/register")
+        .send({ name: "naruto", email: "uniqueUnique@u.com", password: "password" } as IUserCreate);
+
+      const data = res.body;
+      expect(resB.status).to.equal(201);
+      expect(res.status).to.equal(409);
+      expect(data).not.have.property("token");
+      expect(data).not.have.property("user");
+    })
   });
-
-  // describe("PUT /:id", () => {
-  //   it("should update the existing user and return 200", async () => {
-  //     const user = new User({
-  //       name: "lola",
-  //       email: "lola@gmail.com",
-  //       country: "spain"
-  //     });
-  //     await user.save();
-
-  //     const res = await request(app)
-  //       .put("/api/users/" + user._id)
-  //       .send({
-  //         name: "juan",
-  //         email: "juan@gmail.com",
-  //         country: "spain"
-  //       });
-
-  //     expect(res.status).to.equal(200);
-  //     expect(res.body).to.have.property("name", "juan");
-  //     expect(res.body).to.have.property("email", "juan@gmail.com");
-  //     expect(res.body).to.have.property("country", "spain");
-  //   });
-  // });
-
-  // describe("DELETE /:id", () => {
-  //   it("should delete requested id and return response 200", async () => {
-  //     const user = new User({
-  //       name: "george",
-  //       email: "geo@gmail.com",
-  //       country: "spain"
-  //     });
-  //     await user.save();
-  //     userId = user._id;
-  //     const res = await request(app).delete("/api/users/" + userId);
-  //     expect(res.status).to.be.equal(200);
-  //   });
-
-  //   it("should return 404 when deleted user is requested", async () => {
-  //     let res = await request(app).get("/api/users/" + userId);
-  //     expect(res.status).to.be.equal(404);
-  //   });
-  // });
 });
