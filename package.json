@@ -10,7 +10,8 @@
     "start": "node dist/src/app.js",
     "dev": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/app.js\"",
     "build-prod": "cd client && npm install &&  cd .. && npm install",
-    "both": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/app.js\" \" cd ../frontend && yarn run dev \" "
+    "both": "concurrently \"npx tsc --watch\" \"nodemon -q dist/src/app.js\" \" cd ../frontend && yarn run dev \" ",
+    "seed-data": "npx tsc && node dist/src/seed.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
