@@ -1,18 +1,22 @@
 import mongoose, { Types } from "mongoose";
 
 export interface IUserCreate {
+  uid: string
   name: string
   email: string
   password: string
 }
-export interface IUser extends IUserCreate {
-  _id: Types.ObjectId,
+export interface IUser {
+  _id: Types.ObjectId
+  uid: string
+  name: string
+  email: string
 }
 
 const userSchema = new mongoose.Schema<IUser>({
+  uid: {type: String, unique: true},
   email: { type: String, unique: true, maxLength: 50, minlength: 3 },
   name: { type: String, required: true, maxLength: 50, minlength: 1 },
-  password: { type: String, required: true, maxLength: 100, minlength: 5 },
 })
 
 /**
